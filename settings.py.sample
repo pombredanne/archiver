@@ -1,0 +1,22 @@
+
+""" Settings for Archiver program
+"""
+
+title = "" # Leave it empty to use current directory name
+bucket = ""  # Leave it empty to derive it from current directory name
+
+date = "2009-12-04"
+creator = "Ramakrishna Mission Vidyalaya"
+website = "http://rmv.ac.in"
+description = title + ' by ' + creator + \
+              '. Website : <a href=' + website + '> ' + website + ' </a>'
+
+# get these keys from http://www.archive.org/account/s3.php
+access_key = "abcd"
+secret_key = "abcd"
+
+# Posterous credentials
+posterous_username = "abcd"
+posterous_password = "abcd"
+posterous_siteid = "1234"
+posterous_config = "posterous.ini"

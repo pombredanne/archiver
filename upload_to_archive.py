@@ -9,24 +9,7 @@ from fnmatch import fnmatch
 from subprocess import call
 from logbook import debug, info, warn, error
 import settings
-
-
-def slugify(string):
-    import re
-    string = string.strip().lower()
-    return re.sub(r'[\s_-]+', '-', string)
-
-
-def remove_extn(string):
-    if '.' not in string:
-        return string
-    return '.'.join(string.split('.')[0:-1])
-
-
-def headify(string):
-    import re
-    string = remove_extn(string)
-    return re.sub(r'[\s\W_-]+', ' ', string).title()
+from utils import start_logging, remove_extn, slugify, headify
 
 
 def initialize():
@@ -120,19 +103,8 @@ def main():
     process('*.mp4', 'movies', 'opensource_movies', '-videos')
 
 
-def start_logging():
-    import sys
-    from logbook import FileHandler
-
-    this_file = os.path.basename(__file__)
-    log_file = '/var/log/' + remove_extn(this_file) + '.log'
-
-    log_handler = FileHandler(log_file, bubble=True)
-    log_handler.push_application()
-
-
 if __name__ == "__main__":
     import sys
 
-    start_logging()
+    start_logging(__file__)
     sys.exit(main())
