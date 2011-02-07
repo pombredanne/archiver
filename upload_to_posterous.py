@@ -9,7 +9,7 @@ from datetime import datetime
 from subprocess import call
 import urlparse
 from logbook import debug, info, warn, error, critical
-#import pyposterous
+import pyposterous
 from configobj import ConfigObj
 import settings
 from utils import start_logging, headify
@@ -57,17 +57,16 @@ def upload(url, file_name):
     debug("Tile = " + title)
     debug("Tags = " + tags)
 
-    #api = pyposterous.API(username=settings.posterous_username,
-                          #password=settings.posterous_password)
+    api = pyposterous.API(username=settings.posterous_username,
+                          password=settings.posterous_password)
 
-    #post = api.new_post(site_id=settings.posterous_siteid,
-                        #title=title,
-                        #body=body,
-                        #tags=tags,
-                        #media=open(file_name),
-                        #autopost=True)
-    #post_id = post.id
-    post_id = "20"
+    post = api.new_post(site_id=settings.posterous_siteid,
+                        title=title,
+                        body=body,
+                        tags=tags,
+                        media=open(file_name),
+                        autopost=True)
+    post_id = str(post.id)
     info("Posted to Posterous. Id = " + post_id)
     return post_id
 
