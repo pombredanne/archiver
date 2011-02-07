@@ -4,10 +4,7 @@ from logbook import FileHandler
 
 
 def remove_extn(string):
-    if '.' not in string:
-        return string
-    return '.'.join(string.split('.')[0:-1])
-
+    return os.path.splitext(string)[0]
 
 def slugify(string):
     import re

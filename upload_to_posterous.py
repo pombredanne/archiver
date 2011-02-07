@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 ''' This script posts a video to Posterous site
 '''
@@ -7,6 +7,7 @@ import os
 import sys
 from datetime import datetime
 from subprocess import call
+import urlparse
 from logbook import debug, info, warn, error, critical
 #import pyposterous
 from configobj import ConfigObj
@@ -25,7 +26,7 @@ def get_url():
 def download_url(url):
     debug("Downloading " + url)
 
-    file_name = url.split('/')[-1]
+    file_name = urlparse.unquote(url).split('/')[-1]
 
     if os.path.exists(file_name):
         warn(file_name + " already exists. Not downloading")
@@ -44,13 +45,14 @@ def download_url(url):
     return file_name
 
 
-def upload(file_name):
+def upload(url, file_name):
     debug("Uploading " + file_name)
 
     this_dir = os.path.basename(os.getcwd())
 
     title = headify(this_dir) + ' - ' + headify(file_name)
     tags = ", ".join([settings.creator, 'Videos', headify(this_dir)])
+    body = '%s by %s. \n\n For better quality, please <a href="%s">download the .mp4 version</a> to your local computer and view it with VLC Media Player.' %(title, settings.creator, url)
 
     debug("Tile = " + title)
     debug("Tags = " + tags)
@@ -60,7 +62,7 @@ def upload(file_name):
 
     #post = api.new_post(site_id=settings.posterous_siteid,
                         #title=title,
-                        #body=title,
+                        #body=body,
                         #tags=tags,
                         #media=open(file_name),
                         #autopost=True)
@@ -83,7 +85,7 @@ def main():
     debug('=' * 60)
     for url in get_url():
         file_name = download_url(url)
-        post_id = upload(file_name)
+        post_id = upload(url, file_name)
         update(url, post_id)
 
 

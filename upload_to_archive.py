@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 ''' This script uploads PDFs, Audio and Videos from current directory to www.archive.org
 '''
