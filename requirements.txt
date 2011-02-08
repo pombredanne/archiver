@@ -1,0 +1,4 @@
+
+logbook
+pyposterous
+configobj

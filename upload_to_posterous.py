@@ -49,10 +49,11 @@ def upload(url, file_name):
     debug("Uploading " + file_name)
 
     this_dir = os.path.basename(os.getcwd())
+    size = os.path.getsize(file_name) / 1024 / 1024
 
     title = headify(this_dir) + ' - ' + headify(file_name)
-    tags = ", ".join([settings.creator, 'Videos', headify(this_dir)])
-    body = '%s by %s. \n\n For better quality, please <a href="%s">download the .mp4 version</a> to your local computer and view it with VLC Media Player.' %(title, settings.creator, url)
+    tags = ", ".join([settings.creator, headify(this_dir)])
+    body = '%s by %s. \n\n For better quality, please <a href="%s">download the original file (%s MB)</a>  to your local computer and view it with VLC Media Player.' %(title, settings.creator, url, size)
 
     debug("Tile = " + title)
     debug("Tags = " + tags)

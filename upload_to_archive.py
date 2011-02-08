@@ -7,6 +7,7 @@ import os
 import shutil
 from fnmatch import fnmatch
 from subprocess import call
+import urllib2
 from logbook import debug, info, warn, error
 import settings
 from utils import start_logging, remove_extn, slugify, headify
@@ -37,7 +38,7 @@ def upload(item, mediatype, collection, keywords, url_suffix):
         cmd.append('--header')
         cmd.append(str(key) + ':' + str(value))
 
-    cmd.append('echo') # for testing
+    #cmd.append('echo') # for testing
     cmd.append('curl')
     cmd.append('--location')
 
@@ -54,8 +55,8 @@ def upload(item, mediatype, collection, keywords, url_suffix):
     add('x-archive-meta-licenseurl', 'http://creativecommons.org/licenses/by-nc/3.0/')
 
     cmd.append('--progress-bar')
-    cmd.append('--max-time')
-    cmd.append('3600')
+    #cmd.append('--max-time')
+    #cmd.append('3600')
     #cmd.append('--retry')
     #cmd.append('3')
     #cmd.append('--verbose')
@@ -63,7 +64,7 @@ def upload(item, mediatype, collection, keywords, url_suffix):
     cmd.append(item + '.log')
     cmd.append('--upload-file')
     cmd.append(item)
-    cmd.append('http://s3.us.archive.org/' + settings.bucket + url_suffix + '/' + item)
+    cmd.append('http://s3.us.archive.org/' + settings.bucket + url_suffix + '/' + urllib2.quote(item))
 
     try:
         call(cmd)
@@ -90,7 +91,8 @@ def get_keywords(pattern, mediatype):
 
 def process(pattern, mediatype, collection, url_suffix=''):
     keywords = get_keywords(pattern, mediatype)
-    for item in os.listdir(os.curdir):
+    items = sorted(os.listdir(os.curdir))
+    for item in items:
         if fnmatch(item, pattern):
             upload(item, mediatype, collection, keywords, url_suffix)
 
