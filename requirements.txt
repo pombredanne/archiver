@@ -2,3 +2,4 @@
 logbook
 pyposterous
 configobj
+BeautifulSoup

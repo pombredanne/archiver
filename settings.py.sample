@@ -5,18 +5,25 @@
 title = "" # Leave it empty to use current directory name
 bucket = ""  # Leave it empty to derive it from current directory name
 
-date = "2009-12-04"
+date = "2010-12-03"
 creator = "Ramakrishna Mission Vidyalaya"
 website = "http://rmv.ac.in"
 description = title + ' by ' + creator + \
               '. Website : <a href=' + website + '> ' + website + ' </a>'
 
-# get these keys from http://www.archive.org/account/s3.php
-access_key = "abcd"
-secret_key = "abcd"
 
-# Posterous credentials
-posterous_username = "abcd"
-posterous_password = "abcd"
+# archive.org settings
+archivedotorg_pdf_bucket = "vidyalaya"
+archivedotorg_download_base = "http://www.archive.org/download/"
+archivedotorg_upload_base = "http://s3.us.archive.org/"
+#archivedotorg_base = "http://ia700405.us.archive.org/33/items/"
+# get these keys from http://www.archive.org/account/s3.php
+archivedotorg_access_key = "aaa"
+archivedotorg_secret_key = "bbb"
+
+# Posterous settings
+posterous_username = "aaa"
+posterous_password = "bbb"
 posterous_siteid = 1234
+posterous_sitename = "abcd"
 posterous_config = "posterous.ini"
