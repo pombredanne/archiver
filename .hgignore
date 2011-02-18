@@ -1,5 +1,4 @@
 syntax: glob
 
 settings.py
-posterous.ini
 *.mp4

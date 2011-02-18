@@ -1,0 +1,204 @@
+Internet Archive's S3 like server API
+
+
+This document is intended for a user who is comfortable in the
+unix command line environment. It covers the technical details
+of using the archive's S3 like server API.
+
+This document last updated: 2010-09-21 18:26:58 +0000 (Tue, 21 Sep 2010)
+
+For info on S3:
+http://docs.amazonwebservices.com/AmazonS3/latest/index.html?Welcome.html
+
+For info on IA's item structure:
+http://www.archive.org/about/faqs.php
+(sorry!)
+You can also look at an item's structure directly by clicking the HTTP link shown
+on a details page. ex: http://archive.org/details/stats
+
+HINT: If your curl has problems try curl or libcurl version 7.19 or higher.
+  Available at: http://curl.haxx.se/
+
+To get api keys for the archive's S3-Like API go to:
+  http://www.archive.org/account/s3.php
+
+
+What the S3 API does:
+
+o Items (things with details pages) get mapped to S3 Buckets.
+  - ie: http://archive.org/details/stats is also available as:
+        http://s3.us.archive.org/stats
+        or, per s3 dns bucket style:
+        http://stats.s3.us.archive.org/
+
+  - Files within items are also available as S3 keys, ex:
+    http://stats.s3.us.archive.org/downloadsPerDay.png
+
+o Doing a PUT on the S3 endpoint will result in a new internet archive Item
+
+o Files may also be uploaded to an Item in the same way keys are added, via S3 PUT.
+  - When a file is added to an Item, it is staged in temporary storage and ingested
+    via the Archive's content management system. This can take some time.
+
+
+We strive to make the S3 API compatible enough with current client code.
+Hopefully you can just global search and replace amazonaws.com with us.archive.org.
+
+For the popular s3cmd ( http://s3tools.org/s3cmd )
+you can put the following content in your ~/.s3cfg:
+
+[default]
+access_key = YOUR-ACCESS-KEY
+secret_key = YOUR-SECRET-KEY
+host_base = s3.us.archive.org
+host_bucket = %(bucket)s.s3.us.archive.org
+
+For other libraries / tools:
+perl -pi -e  's/amazonaws.com/us.archive.org/g' *
+Hopefully would do the trick.
+
+
+How this is different from normal S3:
+
+o DELETE bucket is not allowed.
+
+o Only the HTTP 1.1 REST interface is supported.
+
+o Archive is much more likely to issue 307 Location redirects than Amazon is.
+    - Which means clients with good 100-Continue support are very nice to have
+    - curl versions curl-7.19 and newer have excellent 100-continue support
+
+o ACLs are fake. permissions are: World readable, Item uploader writable.
+
+o POST and COPY are not implemented.
+
+o If you want to see the diagnostic log of an s3 endpoint append ?log to the url
+  for the endpoint.
+  ex: http://stats.ia310835.s3dns.us.archive.org:82/downloadsPerDay.png?log
+  the log format may change at any time ....
+
+o HTTP 1.1 Range headers are ignored.
+
+
+There are special features of the archive s3 connector to support
+activities with Internet Archive items.
+
+o There is a combined upload and make item feature, just set the header:
+  x-archive-auto-make-bucket:1
+
+o An http header can specify metadata the ends up in _meta.xml at make bucket time.
+  o add headers of form x-archive-meta-$meta_name:$meta_value
+    (or x-amz-meta-$meta_name:$meta_value)
+  o if you want multiple tags in _meta.xml you can put numbers in front:
+    x-amz-meta01-$meta_name:$meta_value_a
+    x-amz-meta02-$meta_name:$meta_value_b
+  o meta headers are sorted prior to tag generation when placed in the xml
+  o meta headers are interpreted as having utf-8 character encoding
+  o because rfc822 http headers disallow _ in names, in $meta_name
+    two hyphens in a row (--) will be translated to an underscore(_).
+  o to update _meta.xml do a bucket PUT with the header
+    x-archive-ignore-preexisting-bucket:1
+    this will erase the old _meta.xml and replace it with
+    a new _meta.xml generated from the x-archive-meta-* headers in the PUT
+
+o There is a cleartext password mode; Authorization header
+  can be of form 'Authorization: LOW $accesskey:$secret'
+
+o Normally a PUT to IA will cause the derive process to be queued
+  for that bucket/item. You can prevent this by specifying a PUT
+  header like so:
+  x-archive-queue-derive:0
+
+o DELETE normally deletes a single file, additionally all the
+  derivatives and originals related to a file can be
+  automatically deleted by specifying a header with the DELETE
+  like so:
+  x-archive-cascade-delete:1
+
+o Normally PUT and DELETE do not keep old versions of files around.
+  To have the archive keep old versions of the object you can
+  add the header:
+  x-archive-keep-old-version:1
+  NOTE: this support is experimental. The effects of interleaving
+  PUTS with and without this header are undefined.
+
+o For large items a size hint can be given to the IA content
+  management system at make bucket time (this helps if your
+  item will be more than 10 gigabytes). Units are in bytes, for example:
+  x-archive-size-hint:19327352832
+
+EXAMPLES:
+
+o these features combined allow single command document upload with curl:
+
+Text item (a PDF will be OCR'd):
+    curl --location --header 'x-amz-auto-make-bucket:1' \
+         --header 'x-archive-meta01-collection:opensource' \
+         --header 'x-archive-meta-mediatype:texts' \
+         --header 'x-archive-meta-sponsor:Andrew W. Mellon Foundation' \
+         --header 'x-archive-meta-language:eng' \
+         --header "authorization: LOW $accesskey:$secret" \
+         --upload-file /home/samuel/public_html/intro-to-k.pdf \
+         http://s3.us.archive.org/sam-s3-test-08/demo-intro-to-k.pdf
+
+
+Movie item (Will get video player on details page):
+    curl --location --header 'x-amz-auto-make-bucket:1' \
+         --header 'x-archive-meta01-collection:opensource_movies' \
+         --header 'x-archive-meta-mediatype:movies' \
+         --header 'x-archive-meta-title:Ben plays piano.' \
+         --header "authorization: LOW $accesskey:$secret" \
+         --upload-file ben-2009-05-09.avi \
+         http://s3.us.archive.org/ben-plays-piano/ben-plays-piano.avi
+
+o If you want to upload a file to an existing item:
+
+    curl --location \
+         --header "authorization: LOW $accesskey:$secret" \
+         --upload-file /home/samuel/public_html/intro-to-k.pdf \
+         http://s3.us.archive.org/sam-s3-test-08/demo-intro-to-k.pdf
+
+
+o Destroy and respecify the metadata for an item:
+
+    curl --location \
+         --header 'x-archive-ignore-preexisting-bucket:1' \
+         --header 'x-archive-meta01-collection:opensource' \
+         --header 'x-archive-meta-mediatype:texts' \
+         --header 'x-archive-meta-title:Fancy new title' \
+         --header "authorization: LOW $accesskey:$secret" \
+         --upload-file /dev/null \
+         http://s3.us.archive.org/sam-s3-test-08
+
+    A Movie example with subject keywords, and creative commons license:
+
+    curl --location --header 'x-archive-ignore-preexisting-bucket:1' \
+         --header "authorization: LOW $accesskey:$secret" \
+         --header 'x-archive-meta-mediatype:movies' \
+         --header 'x-archive-meta-collection:opensource_movies' \
+         --header 'x-archive-meta-title:electricsheep-flock-244' \
+         --header 'x-archive-meta-creator:Scott Draves and the Electric Sheep' \
+         --header 'x-archive-meta-description:Archive of flock 244 of the Electric Sheep, see <a href=http://electricsheep.org >http://electricsheep.org</a> and <a href=http://scottdraves.com > http://scottdraves.com</a>' \
+         --header 'x-archive-meta-date:2009' \
+         --header 'x-archive-meta-year:2009' \
+         --header 'x-archive-meta-subject:electricsheep,alife,art,draves,spotworks,evolution,algorithm' \
+         --header 'x-archive-meta-licenseurl:http://creativecommons.org/licenses/by-nc/3.0/us/' \
+         --upload-file /dev/null \
+         http://s3.us.archive.org/electricsheep-flock-244
+
+
+o Although the s3 interface supports GET and HEAD, high performance
+  downloads are achieved via the archive web infrastructure:
+
+    curl --location http://archive.org/download/sam-s3-test-08/demo-intro-to-k.pdf
+
+o After an object had been PUT into a bucket, many things happen
+  in the archive's petabox content management system (called the catalog).
+  You can see the catalog page for a bucket by looking at:
+  http://www.archive.org/catalog.php?history=1&identifier=$bucket
+
+
+QUESTIONS?
+
+Mail info@archive.org, with the string s3help
+appearing somewhere in the subject line.

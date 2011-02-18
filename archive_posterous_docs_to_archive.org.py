@@ -52,44 +52,7 @@ def download(url, filename):
         debug("Finished downloading " + filename)
 
 
-def exists_in_archivedotorg(bucket, item):
-    url = settings.archivedotorg_download_base + bucket + "/" + item
 
-    try:
-        f = urllib2.urlopen(urllib2.Request(url))
-        debug(item + " already exists in archive.org")
-        return True
-    except urllib2.HTTPError:
-        return False
-
-
-def upload_to_archivedotorg(bucket, item):
-    """ Upload the item to bucket in archive.org
-    """
-    debug('Uploading ' + item + ' to ' + bucket)
-
-    cmd = []
-
-    #cmd.append('echo') # for testing
-    cmd.append('curl')
-    cmd.append('--location')
-
-    cmd.append('--header')
-    cmd.append('authorization : LOW '
-               + settings.archivedotorg_access_key
-               + ':'
-               + settings.archivedotorg_secret_key)
-
-    cmd.append('--progress-bar')
-    cmd.append('--output')
-    cmd.append(item + '.log')
-    cmd.append('--upload-file')
-    cmd.append(item)
-    cmd.append(settings.archivedotorg_upload_base + bucket + '/')
-
-    call(cmd)
-
-    debug('Finished ' + item)
 
 
 def main():
