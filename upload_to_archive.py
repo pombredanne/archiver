@@ -20,7 +20,6 @@ config = ConfigObj(settings.archivedotorg_config, write_empty_values=True)
 
 
 def items_to_upload():
-    config.reload()
     for item in config['items']:
         if not config['items'][item]:
             yield item
@@ -30,12 +29,13 @@ def mark_as_processed(item):
     now = str(datetime.now())
     debug("Updating config for " + item)
 
+    config.reload()
     config['items'][item] = now
     config.write()
 
 
 def main():
-    bucket=config['bucket']['name']
+    bucket=config['bucket']['id']
     archive.create_bucket(bucket,
                           title=config['bucket']['title'],
                           description=config['bucket']['description'],
