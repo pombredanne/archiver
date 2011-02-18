@@ -21,11 +21,10 @@ def items_to_upload():
 
 
 def mark_as_processed(item):
-    now = str(datetime.now())
     debug("Updating config for " + item)
 
     config.reload()
-    config['items'][item] = now
+    config['items'][item] = str(datetime.now())
     config.write()
 
 

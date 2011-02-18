@@ -24,7 +24,7 @@ def items_to_upload():
             yield item
 
 
-def update(item, post_id):
+def mark_as_processed(item, post_id):
     debug("Updating config for " + item)
 
     config.reload()
@@ -41,7 +41,7 @@ def main():
         post_id = posterous.post(title=config[item]['title'],
                                  tags=config[item]['tags'],
                                  media=filename)
-        update(item, post_id)
+        updmark_as_processedate(item, post_id)
 
 
 if __name__ == "__main__":
