@@ -16,6 +16,6 @@ archivedotorg_config = "archive.ini"
 # Posterous settings
 posterous_username = "abcd"
 posterous_password = "xyz"
-posterous_siteid = 1234
-posterous_sitename = "pqr"
+posterous_primary_sitename = "pqr"
+posterous_backup_sitename = "pqr"
 posterous_config = "posterous.ini"

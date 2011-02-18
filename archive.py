@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import urllib2
 from subprocess import call
 from datetime import date
 from logbook import debug, info, warn, error
@@ -13,19 +12,15 @@ collection = {'texts' : 'opensource',
              }
 
 
-def exists_in_archivedotorg(bucket, item=""):
+def exists(bucket, item=""):
     """ Check whether item exists in bucket in archive.org
     """
-    path = bucket + "/" + item
-    url = settings.archivedotorg_download_base + path
+    base = settings.archivedotorg_download_base + bucket + "/"
+    url =  base + item
+    url1 = base + utils.slugify(item)
 
-    try:
-        f = urllib2.urlopen(urllib2.Request(url))
-        debug(path + " already exists in archive.org")
-        return True
-    except urllib2.HTTPError:
-        debug(path + " does not exist in archive.org")
-        return False
+    return utils.exists(url) or utils.exists(url1)
+
 
 
 def create_bucket(bucket,
@@ -67,12 +62,12 @@ def create_bucket(bucket,
     call(cmd)
 
 
-def upload_to_archivedotorg(bucket, item):
+def upload(bucket, item):
     """ Upload the item to bucket in archive.org
     """
     debug('Uploading ' + item + ' to ' + bucket)
 
-    #if exists_in_archivedotorg(bucket, utils.slugify(item)):
+    #if exists(bucket, utils.slugify(item)):
         #warn(item + " already exists in archive.org. Not uploading.")
         #return
 

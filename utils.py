@@ -1,10 +1,14 @@
 import os
-import sys
+import urllib
+import urllib2
+import urlparse
+from logbook import debug, info, warn, error
 from logbook import FileHandler
 
 
 def remove_extn(string):
     return os.path.splitext(string)[0]
+
 
 def slugify(string):
     import re
@@ -16,6 +20,42 @@ def headify(string):
     import re
     string = remove_extn(string)
     return re.sub(r'[\s\W_-]+', ' ', string).title()
+
+
+def exists(url):
+    """ Check whether the url exists.
+    """
+    try:
+        urllib2.urlopen(urllib2.Request(url))
+        debug(url + " already exists.")
+        return True
+    except urllib2.HTTPError:
+        debug(url + " does not exist")
+        return False
+
+
+def get_filename(url):
+    """ Return the last component from url.
+    """
+    path = urlparse.urlparse(url).path
+    last_component = path.split('/')[-1]
+    return last_component
+
+
+def get_slugified_filename(url):
+    return slugify(get_filename(url))
+
+
+def download(url):
+    """ Download the document pointed to by url to cwd
+    """
+    debug("Downloading " + url)
+
+    filename = get_filename(url)
+    urllib.urlretrieve(url, filename)
+
+    debug("Finished Downloading " + filename)
+    return filename
 
 
 def start_logging(filename):

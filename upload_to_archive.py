@@ -3,16 +3,11 @@
 ''' This script uploads PDFs, Audio and Videos from current directory to www.archive.org
 '''
 
-import os
-import shutil
-from fnmatch import fnmatch
-from subprocess import call
-import urllib2
 from datetime import datetime
 from logbook import debug, info, warn, error
 from configobj import ConfigObj
 import settings
-from utils import start_logging, remove_extn, slugify, headify
+import utils
 import archive
 
 
@@ -35,7 +30,7 @@ def mark_as_processed(item):
 
 
 def main():
-    bucket=config['bucket']['id']
+    bucket = config['bucket']['id']
     archive.create_bucket(bucket,
                           title=config['bucket']['title'],
                           description=config['bucket']['description'],
@@ -45,10 +40,10 @@ def main():
                          )
 
     for item in items_to_upload():
-        archive.upload_to_archivedotorg(bucket, item)
+        archive.upload(bucket, item)
         mark_as_processed(item)
 
 
 if __name__ == "__main__":
-    start_logging(__file__)
+    utils.start_logging(__file__)
     main()
