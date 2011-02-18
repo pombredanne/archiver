@@ -72,9 +72,9 @@ def upload_to_archivedotorg(bucket, item):
     """
     debug('Uploading ' + item + ' to ' + bucket)
 
-    if exists_in_archivedotorg(bucket, utils.slugify(item)):
-        warn(item + " already exists in archive.org. Not uploading.")
-        return
+    #if exists_in_archivedotorg(bucket, utils.slugify(item)):
+        #warn(item + " already exists in archive.org. Not uploading.")
+        #return
 
     cmd = []
 
@@ -83,11 +83,12 @@ def upload_to_archivedotorg(bucket, item):
     cmd.append('--location')
 
     cmd.append('--header')
-    cmd.append('authorization : LOW '
+    cmd.append('authorization: LOW '
                + settings.archivedotorg_access_key
                + ':'
                + settings.archivedotorg_secret_key)
 
+    cmd.append('--verbose')
     cmd.append('--progress-bar')
     cmd.append('--output')
     cmd.append(item + '.log')
@@ -95,12 +96,14 @@ def upload_to_archivedotorg(bucket, item):
     cmd.append(item)
     cmd.append(settings.archivedotorg_upload_base + bucket + '/' + utils.slugify(item))
 
-    try:
-        call(cmd)
-    except KeyboardInterrupt:
+    call(cmd)
+
+    #try:
+        #call(cmd)
+    #except KeyboardInterrupt:
         # Sometimes curl is hanging even after uploading the item is 100% done.
         # In that case, I have to press ctrl+c to continue with next item.
-        warn("Received Ctrl+c. Returning.")
+        #warn("Received Ctrl+c. Returning.")
 
 
     debug('Finished ' + item)
