@@ -4,6 +4,8 @@ import urllib2
 import urlparse
 from logbook import debug, info, warn, error
 from logbook import FileHandler
+import urlgrabber
+from urlgrabber.progress import text_progress_meter
 
 
 def remove_extn(string):
@@ -49,12 +51,19 @@ def get_slugified_filename(url):
 def download(url):
     """ Download the document pointed to by url to cwd
     """
-    debug("Downloading " + url)
-
     filename = get_filename(url)
-    urllib.urlretrieve(url, filename)
 
-    debug("Finished Downloading " + filename)
+    if os.path.exists(filename):
+        info(filename + " already exists in cwd. Not downloading. ")
+    else:
+        debug("Downloading " + url)
+
+        urlgrabber.urlgrab(url=url,
+                           filename=filename,
+                           progress_obj=text_progress_meter())
+
+        debug("Finished Downloading " + filename)
+
     return filename
 
 

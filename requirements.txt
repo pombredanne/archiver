@@ -3,3 +3,4 @@ logbook
 pyposterous
 configobj
 BeautifulSoup
+http://urlgrabber.baseurl.org/download/urlgrabber-3.9.1.tar.gz
