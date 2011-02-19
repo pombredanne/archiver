@@ -19,7 +19,7 @@ def post(title, tags='', body='', media=None):
     api = pyposterous.API(username=settings.posterous_username,
                           password=settings.posterous_password)
 
-    p = api.new_post(site_name=settings.posterous_backup_sitename,
+    p = api.new_post(site_id=settings.posterous_backup_siteid,
                      title=title,
                      body=body,
                      tags=tags,
