@@ -35,7 +35,7 @@ def main():
     for doc in posterous_docs(settings.posterous_primary_sitename):
         bucket = settings.archivedotorg_pdf_bucket
 
-        if not archive.exists(bucket, doc):
+        if not archive.exists(bucket, utils.get_slugified_filename(doc)):
             item = utils.download(doc)
             archive.upload(bucket, item)
 
