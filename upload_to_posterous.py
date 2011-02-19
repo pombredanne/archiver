@@ -41,7 +41,7 @@ def main():
         post_id = posterous.post(title=config[item]['title'],
                                  tags=config[item]['tags'],
                                  media=filename)
-        updmark_as_processedate(item, post_id)
+        mark_as_processed(item, post_id)
 
 
 if __name__ == "__main__":
