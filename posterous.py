@@ -13,6 +13,9 @@ def post(title, tags='', body='', media=None):
     if media:
         media = open(media)
 
+    if isinstance(tags, list):
+        tags = ','.join(tags)
+
     api = pyposterous.API(username=settings.posterous_username,
                           password=settings.posterous_password)
 
