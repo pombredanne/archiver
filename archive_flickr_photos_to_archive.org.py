@@ -5,6 +5,7 @@
 
 import os
 import sys
+import urllib
 from logbook import debug, info, warn, error
 import utils
 import settings
@@ -13,11 +14,11 @@ import archive
 
 
 def process(photoset):
+    debug("Processing " + photoset.title)
+
     bucket = photoset.id
     if archive.exists(bucket):
         return
-
-    debug("Processing " + photoset.title)
 
     debug("Creating archive.org bucket " + bucket)
     archive.create_bucket(bucket,
@@ -30,13 +31,8 @@ def process(photoset):
     for photo in photoset.getPhotos():
         url = photo.getLarge()
         item = utils.download(url)
-        archive.upload(bucket, item)
+        archive.upload(bucket, item, progress=False)
         os.remove(item)
-
-        a = raw_input('Continue? [y/n] ')
-        if a != 'y':
-            sys.exit(0)
-
 
 
 def main():
@@ -47,7 +43,6 @@ def main():
     debug("Getting Photosets for user " + user.id)
     for photoset in user.getPhotosets():
         process(photoset)
-        return
 
 
 if __name__ == "__main__":

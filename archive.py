@@ -68,7 +68,7 @@ def create_bucket(bucket,
     call(cmd)
 
 
-def upload(bucket, item):
+def upload(bucket, item, progress=True):
     """ Upload the item to bucket in archive.org
     """
     debug('Uploading ' + item + ' to ' + bucket)
@@ -89,10 +89,12 @@ def upload(bucket, item):
                + ':'
                + settings.archivedotorg_secret_key)
 
-    cmd.append('--verbose')
-    cmd.append('--progress-bar')
-    cmd.append('--output')
-    cmd.append(item + '.log')
+    if progress:
+        cmd.append('--verbose')
+        cmd.append('--progress-bar')
+        cmd.append('--output')
+        cmd.append(item + '.log')
+
     cmd.append('--upload-file')
     cmd.append(item)
     cmd.append(settings.archivedotorg_upload_base + bucket + '/' + utils.slugify(item))

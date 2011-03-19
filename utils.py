@@ -4,8 +4,6 @@ import urllib2
 import urlparse
 from logbook import debug, info, warn, error
 from logbook import FileHandler
-import urlgrabber
-from urlgrabber.progress import text_progress_meter
 
 
 def remove_extn(string):
@@ -48,7 +46,7 @@ def get_slugified_filename(url):
     return slugify(get_filename(url))
 
 
-def download(url):
+def download(url, progress=False):
     """ Download the document pointed to by url to cwd
     """
     filename = get_filename(url)
@@ -58,9 +56,15 @@ def download(url):
     else:
         debug("Downloading " + url)
 
-        urlgrabber.urlgrab(url=url,
-                           filename=filename,
-                           progress_obj=text_progress_meter())
+        if progress:
+            import urlgrabber
+            from urlgrabber.progress import text_progress_meter
+
+            urlgrabber.urlgrab(url=url,
+                               filename=filename,
+                               progress_obj=text_progress_meter())
+        else:
+            urllib.urlretrieve(url=url, filename=filename)
 
         debug("Finished Downloading " + filename)
 
