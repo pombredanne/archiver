@@ -6,6 +6,7 @@
 archivedotorg_pdf_bucket = "vidyalaya"
 archivedotorg_creator = "Ramakrishna Mission Vidyalaya"
 archivedotorg_download_base = "http://www.archive.org/download/"
+archivedotorg_details_base = "http://www.archive.org/details/"
 archivedotorg_upload_base = "http://s3.us.archive.org/"
 # get these keys from http://www.archive.org/account/s3.php
 archivedotorg_access_key = "abcd"
@@ -19,3 +20,9 @@ posterous_password = "xyz"
 posterous_primary_sitename = "pqr"
 posterous_backup_siteid = 1234
 posterous_config = "posterous.ini"
+
+
+# Flickr settings
+flickr_id = "12345678@N01"
+flickr_api_key = "354758435743534756dfgdf54546"
+flickr_api_secret = "aaaaaaaaaa"

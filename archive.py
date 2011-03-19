@@ -15,11 +15,17 @@ collection = {'texts' : 'opensource',
 def exists(bucket, item=""):
     """ Check whether item exists in bucket in archive.org
     """
-    base = settings.archivedotorg_download_base + bucket + "/"
-    url =  base + item
-    url1 = base + utils.slugify(item)
+    if item:
+        base = settings.archivedotorg_download_base + bucket + "/"
+        url =  base + item
+        url1 = base + utils.slugify(item)
 
-    return utils.exists(url) or utils.exists(url1)
+        return utils.exists(url) or utils.exists(url1)
+    else:
+        url = settings.archivedotorg_details_base + bucket
+        return utils.exists(url)
+
+
 
 
 
