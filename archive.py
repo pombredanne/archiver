@@ -100,7 +100,7 @@ def upload(bucket, filename):
         return
 
     widgets = [
-        unicode(filename, errors='ignore').encode('utf-8'), ' ',
+        unicode(str(filename), errors='ignore').encode('utf-8'), ' ',
         progressbar.FileTransferSpeed(),
         ' <<<', progressbar.Bar(), '>>> ',
         progressbar.Percentage(), ' ', progressbar.ETA()
