@@ -17,6 +17,11 @@ def process(photoset):
     debug("Processing " + photoset.title)
 
     bucket = photoset.id
+
+    if archive.exists(bucket):
+        info("Bucket " + bucket + " (" + photoset.title + ") already exists.")
+        return
+
     archive.create_bucket(bucket,
                           title=photoset.title,
                           description=photoset.description,
