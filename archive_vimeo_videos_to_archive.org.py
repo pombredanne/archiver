@@ -26,22 +26,19 @@ def vimeo_video_ids(user):
     return [item['id'] for item in items]
 
 
-def download(video_id, filename):
-    v = Vimeo(id=video_id, title=video_id, ext='mp4')
-
-    if os.path.exists(filename):
-        info("File %s already exists. Not downloading.")
-    else:
-        debug("Downloading %s - %s as %s" % (v.id, v.title, filename))
-        v.run()
-
-
 def main():
     os.chdir('/tmp')
     for video_id in vimeo_video_ids(settings.vimeo_username):
-        filename = '%s.mp4' % video_id
+        v = Vimeo(id=video_id, ext='mp4')
+        filename = '%s.mp4' % v.title
+
         if not archive.exists(bucket, filename):
-            download(video_id, filename)
+            if os.path.exists(filename):
+                info("File %s already exists. Not downloading.")
+            else:
+                debug("Downloading " + filename)
+                v.run()
+
             archive.upload(bucket, filename)
 
 
