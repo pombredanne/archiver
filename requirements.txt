@@ -1,6 +1,10 @@
 
 logbook
-pyposterous
+https://github.com/thomasw/pyposterous/tarball/0.3.2
 configobj
 BeautifulSoup
 http://urlgrabber.baseurl.org/download/urlgrabber-3.9.1.tar.gz
+requests
+videodownloader
+boto
+progressbar

@@ -17,10 +17,6 @@ def process(photoset):
     debug("Processing " + photoset.title)
 
     bucket = photoset.id
-    if archive.exists(bucket):
-        return
-
-    debug("Creating archive.org bucket " + bucket)
     archive.create_bucket(bucket,
                           title=photoset.title,
                           description=photoset.description,
@@ -31,7 +27,7 @@ def process(photoset):
     for photo in photoset.getPhotos():
         url = photo.getLarge()
         item = utils.download(url)
-        archive.upload(bucket, item, progress=False)
+        archive.upload(bucket, item)
         os.remove(item)
 
 

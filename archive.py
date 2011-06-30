@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-from subprocess import call
+import os
 from datetime import date
 from logbook import debug, info, warn, error
 import settings
 import utils
+import boto
+import progressbar
+
 
 collection = {'texts' : 'opensource',
               'audio' : 'opensource_audio',
@@ -12,21 +15,26 @@ collection = {'texts' : 'opensource',
              }
 
 
-def exists(bucket, item=""):
-    """ Check whether item exists in bucket in archive.org
+conn = boto.connect_ia(settings.archivedotorg_access_key,
+                       settings.archivedotorg_secret_key)
+pbar = None
+
+
+def exists(bucket, key=""):
+    """ Check whether key exists in bucket in archive.org
     """
-    if item:
-        base = settings.archivedotorg_download_base + bucket + "/"
-        url =  base + item
-        url1 = base + utils.slugify(item)
+    try:
+        bucket = conn.get_bucket(bucket)
+    except boto.exception.S3ResponseError, e:
+        if e.error_code == 'NoSuchBucket':
+            return False
+        else:
+            raise e
 
-        return utils.exists(url) or utils.exists(url1)
+    if key:
+        return bool(bucket.get_key(key))
     else:
-        url = settings.archivedotorg_details_base + bucket
-        return utils.exists(url)
-
-
-
+        return True
 
 
 def create_bucket(bucket,
@@ -38,75 +46,77 @@ def create_bucket(bucket,
                   keywords=''):
     """ Create the bucket in archive.org
     """
-    debug("Creating " + bucket + " in archive.org")
-    cmd = []
+    if exists(bucket):
+        info("Bucket " + bucket + " already exists.")
+        return
 
-    def add(key, value):
-        cmd.append('--header')
-        cmd.append(str(key) + ':' + str(value))
+    debug("Creating bucket " + bucket + " in archive.org.")
 
-    #cmd.append('echo') # for testing
-    cmd.append('curl')
-    cmd.append('--location')
+    headers = {"x-archive-meta-mediatyp":mediatype,
+               "x-archive-meta-collection":collection[mediatype],
+               "x-archive-meta-title":title,
+               "x-archive-meta-description":description,
+               "x-archive-meta-creator":creator,
+               "x-archive-meta-date":date,
+               "x-archive-meta-subject":keywords,
+               "x-archive-meta-licenseurl":"http://creativecommons.org/licenses/by-nc/3.0"
+              }
 
-    add('x-archive-auto-make-bucket', 1)
-    add('x-archive-ignore-preexisting-bucket', 1)
-    add('authorization', ' LOW ' + settings.archivedotorg_access_key + ':' + settings.archivedotorg_secret_key)
-    add('x-archive-meta-mediatype', mediatype)
-    add('x-archive-meta-collection', collection[mediatype])
-    add('x-archive-meta-title', title)
-    add('x-archive-meta-description', description)
-    add('x-archive-meta-creator', creator)
-    add('x-archive-meta-date', date)
-    add('x-archive-meta-subject', keywords)
-    add('x-archive-meta-licenseurl', 'http://creativecommons.org/licenses/by-nc/3.0/')
-    cmd.append('--upload-file')
-    cmd.append('/dev/null')
-
-    cmd.append(settings.archivedotorg_upload_base + bucket)
-
-    call(cmd)
+    conn.create_bucket(bucket, headers)
 
 
-def upload(bucket, item, progress=True):
-    """ Upload the item to bucket in archive.org
-    """
-    debug('Uploading ' + item + ' to ' + bucket)
-
-    #if exists(bucket, utils.slugify(item)):
-        #warn(item + " already exists in archive.org. Not uploading.")
-        #return
-
-    cmd = []
-
-    #cmd.append('echo') # for testing
-    cmd.append('curl')
-    cmd.append('--location')
-
-    cmd.append('--header')
-    cmd.append('authorization: LOW '
-               + settings.archivedotorg_access_key
-               + ':'
-               + settings.archivedotorg_secret_key)
-
-    if progress:
-        cmd.append('--verbose')
-        cmd.append('--progress-bar')
-        cmd.append('--output')
-        cmd.append(item + '.log')
-
-    cmd.append('--upload-file')
-    cmd.append(item)
-    cmd.append(settings.archivedotorg_upload_base + bucket + '/' + utils.slugify(item))
-
-    call(cmd)
-
-    #try:
-        #call(cmd)
-    #except KeyboardInterrupt:
-        # Sometimes curl is hanging even after uploading the item is 100% done.
-        # In that case, I have to press ctrl+c to continue with next item.
-        #warn("Received Ctrl+c. Returning.")
+def sizeof_fmt(num):
+    for x in ['bytes','KB','MB','GB','TB']:
+        if num < 1024.0:
+            return "%3.1f%s" % (num, x)
+        num /= 1024.0
 
 
-    debug('Finished ' + item)
+def progress_callback(current, total):
+    try:
+        pbar.update(current)
+    except AssertionError, e:
+        print e
+
+
+def upload(bucket, filename):
+    debug("Uploading " + filename + " to " + bucket)
+
+    if not exists(bucket):
+        error("Bucket " + bucket + " does not exist.")
+        return
+
+    slugified_filename = utils.slugify(filename)
+    if exists(bucket, slugified_filename):
+        info("File " + slugified_filename + " in bucket " + bucket + " already exists.")
+        return
+
+    bucket = conn.get_bucket(bucket)
+    key = bucket.new_key(slugified_filename)
+
+    size = os.stat(filename).st_size
+    if size == 0:
+        error("Bad filesize for '%s'" % (filename))
+        return
+
+    widgets = [
+        unicode(filename, errors='ignore').encode('utf-8'), ' ',
+        progressbar.FileTransferSpeed(),
+        ' <<<', progressbar.Bar(), '>>> ',
+        progressbar.Percentage(), ' ', progressbar.ETA()
+    ]
+    global pbar
+    pbar = progressbar.ProgressBar(widgets=widgets, maxval=size)
+    pbar.start()
+
+    try:
+        key.set_contents_from_filename(
+            filename,
+            cb=progress_callback,
+            num_cb=100
+        )
+    except IOError, e:
+        print e
+
+    pbar.finish()
+

@@ -26,3 +26,8 @@ posterous_config = "posterous.ini"
 flickr_id = "12345678@N01"
 flickr_api_key = "354758435743534756dfgdf54546"
 flickr_api_secret = "aaaaaaaaaa"
+
+
+# Vimeo settings
+vimeo_username = "abcdef"
+archivedotorg_bucket_for_vimeo = "abcdef-vimeo"
