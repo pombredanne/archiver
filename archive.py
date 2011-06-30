@@ -52,13 +52,13 @@ def create_bucket(bucket,
 
     debug("Creating bucket " + bucket + " in archive.org.")
 
-    headers = {"x-archive-meta-mediatyp":mediatype,
+    headers = {"x-archive-meta-mediatype":mediatype,
                "x-archive-meta-collection":collection[mediatype],
-               "x-archive-meta-title":title,
-               "x-archive-meta-description":description,
-               "x-archive-meta-creator":creator,
-               "x-archive-meta-date":date,
-               "x-archive-meta-subject":keywords,
+               "x-archive-meta-title":str(title),
+               "x-archive-meta-description":str(description),
+               "x-archive-meta-creator":str(creator),
+               "x-archive-meta-date":str(date),
+               "x-archive-meta-subject":str(keywords),
                "x-archive-meta-licenseurl":"http://creativecommons.org/licenses/by-nc/3.0"
               }
 
