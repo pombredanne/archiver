@@ -86,13 +86,12 @@ def upload(bucket, filename):
         error("Bucket " + bucket + " does not exist.")
         return
 
-    slugified_filename = utils.slugify(filename)
-    if exists(bucket, slugified_filename):
-        info("File " + slugified_filename + " in bucket " + bucket + " already exists.")
+    if exists(bucket, filename):
+        info("File " + filename + " in bucket " + bucket + " already exists.")
         return
 
     bucket = conn.get_bucket(bucket)
-    key = bucket.new_key(slugified_filename)
+    key = bucket.new_key(filename)
 
     size = os.stat(filename).st_size
     if size == 0:

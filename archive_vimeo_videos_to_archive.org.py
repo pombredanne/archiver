@@ -34,7 +34,7 @@ def main():
 
         if not archive.exists(bucket, filename):
             if os.path.exists(filename):
-                info("File %s already exists. Not downloading.")
+                info("File %s already exists. Not downloading." % filename)
             else:
                 debug("Downloading " + filename)
                 v.run()
